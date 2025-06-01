@@ -1,3 +1,5 @@
+import { CardDropProps } from "../ui-components/Card/cad";
+
 type ResizeProps =
   | {
     originalWidth: number;
@@ -29,4 +31,12 @@ export function resizeWithAspectRatio({
       height: targetHeight,
     };
   }
+}
+
+
+
+export const findClosestCard = (dragedCard: CardDropProps) => {
+
+
+  return { groupIndex: null, cardIndex: null };
 }

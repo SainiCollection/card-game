@@ -7,6 +7,10 @@ export type cardNameType =
   | '2_of_spades' | '3_of_spades' | '4_of_spades' | '5_of_spades' | '6_of_spades' | '7_of_spades' | '8_of_spades' | '9_of_spades' | '10_of_spades' | 'jack_of_spades' | 'queen_of_spades' | 'king_of_spades' | 'ace_of_spades'
   | 'black_joker' | 'red_joker' | 'back';
 
+export type cardGroupDataType = {name: cardNameType}[]
+
+export type cardDataType = cardGroupDataType[]
+
 export type CardLayoutProps = {
   x: number;
   y: number;
@@ -27,8 +31,13 @@ export type CardViewProps = {
 } & ViewProps;
 
 
-export type CardProps = CardViewProps & {
-  cardIndex?: number;
-  groupIndex?: number;
+export type CardDropProps = {name:string, cardIndex:number, groupIndex:number, position:{x:number, y:number}};
+
+export type cardInfoType = {
+  cardIndex: number;
+  groupIndex: number;
   onRender?: (cardRender: CardRenderProps) => void;
+  onDrop?: (p: CardDropProps) => void;
 }
+
+export type CardProps = CardViewProps & cardInfoType
