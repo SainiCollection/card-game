@@ -1,9 +1,19 @@
-import { useCallback, useEffect, useRef } from 'react';
-import { Animated, LayoutChangeEvent, PanResponder, View } from 'react-native';
-import { CardLayoutProps, CardProps, CardRenderProps } from './cad';
-import CardView from './CardView';
+import { useCallback, useEffect, useRef } from "react";
+import { Animated, LayoutChangeEvent, PanResponder, View } from "react-native";
+import { CardLayoutProps, CardProps, CardRenderProps } from "./cad";
+import CardView from "./CardView";
 
-const Card: React.FC<CardProps> = ({ name, cardIndex = -1, groupIndex = -1, onRender, onDrop, ...restCardProps }) => {
+const Card: React.FC<CardProps> = ({
+  name,
+  cardIndex = -1,
+  groupIndex = -1,
+  onRender,
+  onDrop,
+  onMove,
+  style,
+  isMoving,
+  ...restCardProps
+}) => {
   const pan = useRef(new Animated.ValueXY()).current;
   const cardRef = useRef<View>(null);
 
@@ -13,7 +23,7 @@ const Card: React.FC<CardProps> = ({ name, cardIndex = -1, groupIndex = -1, onRe
     // Delay to ensure layout is stable
     setTimeout(() => {
       cardRef.current?.measureInWindow((x, y, width, height) => {
-        console.log('[Initial Position]', {
+        console.log("[Initial Position]", {
           name,
           cardIndex,
           groupIndex,
@@ -35,16 +45,27 @@ const Card: React.FC<CardProps> = ({ name, cardIndex = -1, groupIndex = -1, onRe
     cardInitialPosition(); // Call once on mount
   }, [cardInitialPosition]);
 
-  const handleLayout = useCallback((event: LayoutChangeEvent) => {
-    const layout: CardLayoutProps = { ...event.nativeEvent.layout };
-    const cardRenderInfo: CardRenderProps = { name, cardIndex, groupIndex, layout };
-    onRender?.(cardRenderInfo);
-  }, [name, cardIndex, groupIndex, onRender]);
+  const handleLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      const layout: CardLayoutProps = { ...event.nativeEvent.layout };
+      const cardRenderInfo: CardRenderProps = {
+        name,
+        cardIndex,
+        groupIndex,
+        layout,
+      };
+      onRender?.(cardRenderInfo);
+    },
+    [name, cardIndex, groupIndex, onRender]
+  );
 
   const panResponder = useRef(
     PanResponder.create({
+      // Ask to be the responder for pan gestures
       onStartShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponderCapture: () => false,
       onMoveShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponderCapture: () => false,
       onPanResponderGrant: () => {
         pan.setOffset({
           x: (pan.x as any).__getValue(),
@@ -52,13 +73,25 @@ const Card: React.FC<CardProps> = ({ name, cardIndex = -1, groupIndex = -1, onRe
         });
         pan.setValue({ x: 0, y: 0 });
       },
-      onPanResponderMove: Animated.event(
-        [null, { dx: pan.x, dy: pan.y }],
-        { useNativeDriver: false }
-      ),
+      // on Move-------------------------------------------------------------------
+      onPanResponderMove: (_, gestureState) => {
+        pan.setValue({ x: gestureState.dx, y: gestureState.dy });
+
+        cardRef.current?.measureInWindow((x, y) => {
+
+          onMove?.({
+            name,
+            cardIndex,
+            groupIndex,
+            position: { x, y },
+          });
+        });
+      },
+
+      // on Release----------------------------------------------------------------
       onPanResponderRelease: () => {
         cardRef.current?.measureInWindow((x, y) => {
-          console.log('Card dropped at:', { x, y });
+          console.log("Card dropped at:", { x, y });
           onDrop?.({
             name,
             cardIndex,
@@ -73,6 +106,7 @@ const Card: React.FC<CardProps> = ({ name, cardIndex = -1, groupIndex = -1, onRe
           useNativeDriver: false,
         }).start();
       },
+      onPanResponderTerminationRequest: () => true, // Allow other components to take over
       onPanResponderTerminate: () => {
         pan.flattenOffset();
         Animated.spring(pan, {
@@ -80,6 +114,7 @@ const Card: React.FC<CardProps> = ({ name, cardIndex = -1, groupIndex = -1, onRe
           useNativeDriver: false,
         }).start();
       },
+      onShouldBlockNativeResponder: () => true, // Prevent native components from becoming responder
     })
   ).current;
 
@@ -89,9 +124,15 @@ const Card: React.FC<CardProps> = ({ name, cardIndex = -1, groupIndex = -1, onRe
       {...panResponder.panHandlers}
       style={{
         transform: [{ translateX: pan.x }, { translateY: pan.y }],
+        zIndex: isMoving ? 100 : 1, // Bring to front when moving
       }}
     >
-      <CardView name={name} onLayout={handleLayout} {...restCardProps} />
+      <CardView
+        name={name}
+        onLayout={handleLayout}
+        {...restCardProps}
+        style={style}
+      />
     </Animated.View>
   );
 };

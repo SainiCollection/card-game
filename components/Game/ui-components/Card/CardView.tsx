@@ -2,7 +2,7 @@ import { Image, StyleSheet, View } from 'react-native';
 import { resizeWithAspectRatio } from '../../utils/basic';
 import { CardViewProps } from './cad';
 
-const CardView: React.FC<CardViewProps> = ({ name, ...restCardProps }) => {
+const CardView: React.FC<CardViewProps> = ({ name, style, ...restCardProps }) => {
   const imageSize = resizeWithAspectRatio({
     originalWidth: 222,
     originalHeight: 323,
@@ -11,7 +11,7 @@ const CardView: React.FC<CardViewProps> = ({ name, ...restCardProps }) => {
 
   return (
     <View
-      style={[styles.cardContainer, { width: imageSize.width, height: imageSize.height }]}
+      style={[styles.cardContainer, style, { width: imageSize.width, height: imageSize.height }]}
       {...restCardProps}
     >
       <View style={[styles.fullWidth]}>

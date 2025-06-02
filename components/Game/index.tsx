@@ -1,9 +1,10 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Text, View, StyleSheet } from "react-native";
 import Card from "./ui-components/Card";
 import {
   cardDataType,
   CardDropProps,
+  CardMoveProps,
   cardGroupDataType,
   CardProps,
 } from "./ui-components/Card/cad";
@@ -19,8 +20,13 @@ function Game({ cardsData }: { cardsData: cardDataType }): React.JSX.Element {
     [key: string]: { x: number; y: number; width: number; height: number };
   }>({});
 
-  const [cardGroups, setCardGroups] = useState<cardDataType>([...cardsData, [{name: "back"}]]);
+  const [cardGroups, setCardGroups] = useState<cardDataType>([
+    ...cardsData,
+    [{ name: "back" }],
+  ]);
+  const [movingCardKey, setMovingCardKey] = useState<CardMoveProps | null>(null);
 
+  // handle card render----------------------------------------------------
   const handleRender = ({
     name,
     cardIndex,
@@ -34,9 +40,9 @@ function Game({ cardsData }: { cardsData: cardDataType }): React.JSX.Element {
   }) => {
     const key = `${groupIndex}-${cardIndex}`;
     initialCardPositions.current[key] = layout;
-    console.log(`Card Rendered: ${name} at x: ${layout.x}`);
   };
 
+  // handle card drop----------------------------------------------------
   const handleDrop = (dragedCard: CardDropProps) => {
     findClosestCard(dragedCard); // in progress
 
@@ -107,13 +113,20 @@ function Game({ cardsData }: { cardsData: cardDataType }): React.JSX.Element {
     newCardGroup[closestGroupIndex] = targetRow;
 
     setCardGroups(newCardGroup);
+    setMovingCardKey(null);
   };
+
+  // handle card move----------------------------------------------------
+  const handleMove = (movingCard: CardMoveProps) => {
+    setMovingCardKey(movingCard);
+  };
+
 
   return (
     <View>
       <View>
         <Text style={{ textAlign: "center", marginVertical: 20 }}>
-          MetaData
+          MetaData: {JSON.stringify(movingCardKey)}
         </Text>
       </View>
       <View style={styles.cardGroupContainer}>
@@ -124,6 +137,8 @@ function Game({ cardsData }: { cardsData: cardDataType }): React.JSX.Element {
             cards={row}
             onCardRender={handleRender}
             onCardDrop={handleDrop}
+            onCardMove={handleMove}
+            movingCard={movingCardKey}
           />
         ))}
       </View>

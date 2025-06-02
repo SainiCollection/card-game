@@ -6,7 +6,9 @@ type CardGroupProps = {
   cards: cardGroupDataType;
   groupIndex: number;
   onCardDrop: CardProps["onDrop"];
+  onCardMove: CardProps["onMove"];
   onCardRender: CardProps["onRender"];
+  movingCard:any;
 };
 
 const CardGroup: React.FC<CardGroupProps> = ({
@@ -14,6 +16,8 @@ const CardGroup: React.FC<CardGroupProps> = ({
   groupIndex,
   onCardDrop,
   onCardRender,
+  onCardMove,
+  movingCard,
 }) => {
   return (
     <View
@@ -21,6 +25,8 @@ const CardGroup: React.FC<CardGroupProps> = ({
         flexDirection: "row",
         justifyContent: "center",
         marginVertical: 10,
+        position: "relative",
+        zIndex: movingCard?.groupIndex === groupIndex ? 10 : 1,
       }}
     >
       {cards.map((card, cardIndex) => (
@@ -31,6 +37,9 @@ const CardGroup: React.FC<CardGroupProps> = ({
           groupIndex={groupIndex}
           onDrop={onCardDrop}
           onRender={onCardRender}
+          onMove={onCardMove}
+          style={{ marginRight: -10 }}
+          isMoving={movingCard?.cardIndex === cardIndex && movingCard?.groupIndex === groupIndex}
         />
       ))}
     </View>

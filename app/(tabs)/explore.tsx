@@ -15,6 +15,7 @@ const dataSet: cardDataType = [
     { name: "5_of_hearts" },
     { name: "6_of_spades" },
   ]
+  
 ];
 
 export default function TabTwoScreen() {
