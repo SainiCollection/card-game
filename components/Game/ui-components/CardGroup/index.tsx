@@ -23,6 +23,7 @@ const CardGroup: React.FC<CardGroupProps> = ({
     <View
       style={{
         flexDirection: "row",
+        backgroundColor: "red",
         justifyContent: "center",
         marginVertical: 10,
         position: "relative",

@@ -11,6 +11,12 @@ export type cardGroupDataType = {name: cardNameType}[]
 
 export type cardDataType = cardGroupDataType[]
 
+export type HoveredGroupType = {
+  newCardGroup: cardGroupDataType[];
+  closestGroupIndex: number;
+  closestCardIndex: number;
+}
+
 export type CardLayoutProps = {
   x: number;
   y: number;

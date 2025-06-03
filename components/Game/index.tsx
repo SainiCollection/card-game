@@ -24,7 +24,9 @@ function Game({ cardsData }: { cardsData: cardDataType }): React.JSX.Element {
     ...cardsData,
     [{ name: "back" }],
   ]);
-  const [movingCardKey, setMovingCardKey] = useState<CardMoveProps | null>(null);
+  const [movingCardKey, setMovingCardKey] = useState<CardMoveProps | null>(
+    null
+  );
 
   // handle card render----------------------------------------------------
   const handleRender = ({
@@ -44,83 +46,46 @@ function Game({ cardsData }: { cardsData: cardDataType }): React.JSX.Element {
 
   // handle card drop----------------------------------------------------
   const handleDrop = (dragedCard: CardDropProps) => {
-    findClosestCard(dragedCard); // in progress
-
-    const { name, cardIndex, groupIndex, position } = dragedCard;
-    const sourceGroupIndex = groupIndex;
-
-    const sourceRow = [...cardGroups[sourceGroupIndex]];
-    const draggedCardIndex = sourceRow.findIndex((c) => c.name === name);
-    if (draggedCardIndex === -1) return;
-
-    const draggedCard = sourceRow[draggedCardIndex];
-
-    let closestGroupIndex: number | null = null;
-    let closestCardIndex: number | null = null;
-    let closestDistance = Infinity;
-
-    cardGroups.forEach((group, gIndex) => {
-      group.forEach((card, cIndex) => {
-        const key = `${gIndex}-${cIndex}`;
-        const layout = initialCardPositions.current[key];
-        if (!layout) return;
-
-        // Skip the dragged card itself
-        if (gIndex === groupIndex && cIndex === cardIndex) return;
-
-        const centerX = layout.x + layout.width / 2;
-        const dx = Math.abs(position.x - centerX);
-
-        if (dx < closestDistance) {
-          closestDistance = dx;
-          closestGroupIndex = gIndex;
-          closestCardIndex = cIndex;
+    const cardKey = `${dragedCard.groupIndex}-${dragedCard.cardIndex}`;
+    const cardLayout = initialCardPositions.current[cardKey];
+    if (cardLayout) {
+      const result = findClosestCard(
+        dragedCard,
+        cardGroups,
+        // cardLayout,
+        initialCardPositions
+      ); // in progress
+      if (result) {
+        const { newCardGroup, closestGroupIndex, closestCardIndex } = result;
+        setCardGroups(newCardGroup);
+        if (newCardGroup) {
+          console.log("Card group ------->:", newCardGroup, closestGroupIndex,closestCardIndex);
         }
-      });
-    });
-
-    if (closestGroupIndex === null || closestCardIndex === null) {
-      console.log("❌ No valid drop target found.");
-      return;
+      }
     }
 
-    const newCardGroup = [...cardGroups];
-
-    // Remove dragged card from source
-    newCardGroup[sourceGroupIndex] = newCardGroup[sourceGroupIndex].filter(
-      (c) => c.name !== name
-    );
-
-    // Insert into target group
-    const targetRow = [...newCardGroup[closestGroupIndex]];
-    const layout =
-      initialCardPositions.current[`${closestGroupIndex}-${closestCardIndex}`];
-
-    if (!layout) return;
-
-    let insertAt = closestCardIndex + 1;
-
-    if (closestCardIndex === 0 && position.x < layout.x) {
-      insertAt = 0;
-    }
-
-    // Adjust index if moving within the same group and forward
-    if (sourceGroupIndex === closestGroupIndex && draggedCardIndex < insertAt) {
-      insertAt -= 1;
-    }
-
-    targetRow.splice(insertAt, 0, draggedCard);
-    newCardGroup[closestGroupIndex] = targetRow;
-
-    setCardGroups(newCardGroup);
-    setMovingCardKey(null);
+    // setMovingCardKey(null);
   };
 
   // handle card move----------------------------------------------------
   const handleMove = (movingCard: CardMoveProps) => {
-    setMovingCardKey(movingCard);
+    // const cardKey = `${movingCard.groupIndex}-${movingCard.cardIndex}`;
+    // const cardLayout = initialCardPositions.current[cardKey];
+    // const positions = { x: cardLayout.x, y: cardLayout.y };
+    // const result = findClosestCard(
+    //   movingCard,
+    //   cardGroups,
+    //   // positions,
+    //   initialCardPositions
+    // );
+    // if (result) {
+    //   const { newCardGroup, closestGroupIndex, closestCardIndex } = result;
+    //   console.log("Currently hover group:", newCardGroup, closestGroupIndex, closestCardIndex);
+    // } else {
+    //   console.log("Currently not over any card.");
+    // }
+    // setMovingCardKey(movingCard);
   };
-
 
   return (
     <View>
@@ -151,6 +116,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     gap: 40,
+    backgroundColor: "#f0f0f0",
   },
 });
 

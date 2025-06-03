@@ -14,6 +14,12 @@ const dataSet: cardDataType = [
     { name: "4_of_clubs" },
     { name: "5_of_hearts" },
     { name: "6_of_spades" },
+  ],
+  [
+    { name: "3_of_diamonds" },
+    { name: "4_of_clubs" },
+    { name: "5_of_hearts" },
+    { name: "6_of_spades" },
   ]
   
 ];

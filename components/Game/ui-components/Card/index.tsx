@@ -23,12 +23,12 @@ const Card: React.FC<CardProps> = ({
     // Delay to ensure layout is stable
     setTimeout(() => {
       cardRef.current?.measureInWindow((x, y, width, height) => {
-        console.log("[Initial Position]", {
-          name,
-          cardIndex,
-          groupIndex,
-          position: { x, y, width, height },
-        });
+        // console.log("[Initial Position]", {
+        //   name,
+        //   cardIndex,
+        //   groupIndex,
+        //   position: { x, y, width, height },
+        // });
 
         // Optionally, you can lift this up via onRender
         onRender?.({
