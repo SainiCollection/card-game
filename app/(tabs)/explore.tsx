@@ -11,22 +11,22 @@ import { cardDataType } from "@/components/Game/ui-components/Card/cad";
 const dataSet: cardDataType = [
   [
     { name: "3_of_diamonds" },
-    { name: "4_of_clubs" },
-    { name: "5_of_hearts" },
-    { name: "6_of_spades" },
+    { name: "3_of_clubs" },
+    { name: "3_of_hearts" },
+    { name: "3_of_spades" },
   ],
   [
-    { name: "3_of_diamonds" },
+    { name: "4_of_diamonds" },
     { name: "4_of_clubs" },
-    { name: "5_of_hearts" },
-    { name: "6_of_spades" },
+    { name: "4_of_hearts" },
+    { name: "4_of_spades" },
   ]
   
 ];
 
 export default function TabTwoScreen() {
   const [cards] = useState<cardDataType>(dataSet);
-  console.log("cards", cards);
+  console.log("default cards set", cards);
 
   return (
     <ParallaxScrollView

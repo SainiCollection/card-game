@@ -39,79 +39,83 @@ export function resizeWithAspectRatio({
   }
 }
 
+
+// find closest method for card drag and drop
 export const findClosestCard = (
-  dragedCard: CardDropProps,
+  draggedCard: CardDropProps,
   cardGroups: cardGroupDataType[],
-  // positions: { x: number; y: number },
   initialCardPositions: React.MutableRefObject<{
     [key: string]: CardLayoutProps;
   }>
-): HoveredGroupType | null => {
-  const { name, cardIndex, groupIndex, position } = dragedCard;
-  const sourceGroupIndex = groupIndex;
+): {
+  newCardGroupIndex: number;
+  newCardIndex: number;
+  prevCardIndex: number;
+  prevCardGroup: number;
+  cardName: string;
+} | null => {
+  const { name, cardIndex, groupIndex, position } = draggedCard;
 
-  const sourceRow = [...cardGroups[sourceGroupIndex]];
+  const sourceRow = cardGroups[groupIndex];
   const draggedCardIndex = sourceRow.findIndex((c) => c.name === name);
   if (draggedCardIndex === -1) return null;
-
-  const draggedCard = sourceRow[draggedCardIndex];
 
   let closestGroupIndex: number | null = null;
   let closestCardIndex: number | null = null;
   let closestDistance = Infinity;
 
+  const draggedCenterX = position.x;
+  const draggedCenterY = position.y;
+
   cardGroups.forEach((group, gIndex) => {
     group.forEach((card, cIndex) => {
       const key = `${gIndex}-${cIndex}`;
       const layout = initialCardPositions.current[key];
-      if (!layout) return null;
+      if (!layout) return;
 
-      // Skip the dragged card itself
+      // Skip self
       if (gIndex === groupIndex && cIndex === cardIndex) return;
 
-      const centerX = layout.x + layout.width / 2;
-      const dx = Math.abs(position.x - centerX);
+      const { x, y, width, height } = layout;
+      const centerX = x + width / 2;
+      const centerY = y + height / 2;
 
-      if (dx < closestDistance) {
-        closestDistance = dx;
-        closestGroupIndex = gIndex;
-        closestCardIndex = cIndex;
+      const isInsideX = draggedCenterX >= x && draggedCenterX <= x + width;
+      const isInsideY = draggedCenterY >= y && draggedCenterY <= y + height;
+
+      const isBeforeFirst =
+        cIndex === 0 &&
+        draggedCenterX >= x - width / 1.3 && draggedCenterX < x &&
+        draggedCenterY >= y && draggedCenterY <= y + height;
+
+      if ((isInsideX && isInsideY) || isBeforeFirst) {
+        const dx = draggedCenterX - centerX;
+        const dy = draggedCenterY - centerY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestGroupIndex = gIndex;
+          closestCardIndex = cIndex;
+        }
       }
     });
   });
 
-  if (closestGroupIndex === null || closestCardIndex === null) {
-    console.log("❌ No valid drop target found.");
+  if (
+    closestGroupIndex === null ||
+    closestCardIndex === null ||
+    !initialCardPositions.current[`${closestGroupIndex}-${closestCardIndex}`]
+  ) {
+    console.log("❌ No valid drop target: not over a card or pre-card zone");
     return null;
   }
 
-  const newCardGroup = [...cardGroups];
-
-  // Remove dragged card from source
-  newCardGroup[sourceGroupIndex] = newCardGroup[sourceGroupIndex].filter(
-    (c) => c.name !== name
-  );
-
-  // Insert into target group
-  const targetRow = [...newCardGroup[closestGroupIndex]];
-  const layout =
-    initialCardPositions.current[`${closestGroupIndex}-${closestCardIndex}`];
-
-  if (!layout) return null;
-
-  let insertAt = closestCardIndex + 1;
-
-  if (closestCardIndex === 0 && position.x < layout.x) {
-    insertAt = 0;
-  }
-
-  // Adjust index if moving within the same group and forward
-  if (sourceGroupIndex === closestGroupIndex && draggedCardIndex < insertAt) {
-    insertAt -= 1;
-  }
-
-  targetRow.splice(insertAt, 0, draggedCard);
-  newCardGroup[closestGroupIndex] = targetRow;
-
-  return {newCardGroup, closestGroupIndex, closestCardIndex};
+  return {
+    newCardGroupIndex: closestGroupIndex,
+    newCardIndex: closestCardIndex,
+    prevCardIndex: cardIndex,
+    prevCardGroup: groupIndex,
+    cardName: name,
+  };
 };

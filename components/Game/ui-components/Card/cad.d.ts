@@ -39,6 +39,7 @@ export type CardViewProps = {
 
 export type CardDropProps = {name:string, cardIndex:number, groupIndex:number, position:{x:number, y:number}};
 export type CardMoveProps = {name:string, cardIndex:number, groupIndex:number, position:{x:number, y:number}};
+export type CardStartProps = {name:cardNameType, cardIndex:number, groupIndex:number};
 
 export type cardInfoType = {
   cardIndex: number;
@@ -47,6 +48,8 @@ export type cardInfoType = {
   onRender?: (cardRender: CardRenderProps) => void;
   onDrop?: (p: CardDropProps) => void;
   onMove?: (p: CardMoveProps) => void;
+  onStart?: (p:CardStartProps) => void;
+  groupVersion: number;
 }
 
 export type CardProps = CardViewProps & cardInfoType
